@@ -1,37 +1,36 @@
+import fastifyStatic from "@fastify/static";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import type { FastifyInstance } from "fastify";
 import type { AppEnv } from "../config/env.js";
-import { consentCss, consentHtml, consentScript } from "../oauth-consent/consent.js";
 
-const supabaseUmdPath = resolve(
-  process.cwd(),
-  "node_modules/@supabase/supabase-js/dist/umd/supabase.js"
-);
+const consentDistPath = resolve(process.cwd(), "dist-web/consent");
+const consentIndexPath = resolve(consentDistPath, "index.html");
+
+function createConsentConfigScript(env: AppEnv) {
+  const config = JSON.stringify({
+    supabaseUrl: env.supabaseUrl,
+    supabaseAnonKey: env.supabaseAnonKey,
+  });
+
+  return `<script>window.__PERSONAL_MCP_CONFIG__ = ${config};</script>`;
+}
 
 export async function registerAssetsRoutes(app: FastifyInstance, env: AppEnv) {
   app.get("/assets/health.txt", async (_request, reply) => {
     return reply.type("text/plain").send("ok");
   });
 
+  await app.register(fastifyStatic, {
+    root: consentDistPath,
+    prefix: "/assets/consent/",
+    decorateReply: false,
+  });
+
   app.get("/oauth/consent", async (_request, reply) => {
-    const html = consentHtml
-      .replace("__SUPABASE_URL__", env.supabaseUrl)
-      .replace("__SUPABASE_ANON_KEY__", env.supabaseAnonKey);
+    const html = await readFile(consentIndexPath, "utf8");
+    const hydratedHtml = html.replace("</head>", `${createConsentConfigScript(env)}</head>`);
 
-    return reply.type("text/html; charset=utf-8").send(html);
-  });
-
-  app.get("/assets/oauth-consent.css", async (_request, reply) => {
-    return reply.type("text/css; charset=utf-8").send(consentCss);
-  });
-
-  app.get("/assets/oauth-consent.js", async (_request, reply) => {
-    return reply.type("application/javascript; charset=utf-8").send(consentScript);
-  });
-
-  app.get("/assets/vendor/supabase.js", async (_request, reply) => {
-    const script = await readFile(supabaseUmdPath, "utf8");
-    return reply.type("application/javascript; charset=utf-8").send(script);
+    return reply.type("text/html; charset=utf-8").send(hydratedHtml);
   });
 }
