@@ -1,0 +1,8 @@
+node_modules/
+.pnpm-store/
+.supabase-home/
+dist/
+coverage/
+pnpm-lock.yaml
+supabase/.branches/
+supabase/.temp/

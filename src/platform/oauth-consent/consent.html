@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Authorize Personal MCP</title>
+    <link rel="stylesheet" href="/assets/oauth-consent.css" />
+  </head>
+  <body data-supabase-url="__SUPABASE_URL__" data-supabase-anon-key="__SUPABASE_ANON_KEY__">
+    <main class="shell">
+      <h1>Authorize Personal MCP</h1>
+      <p id="status">Loading authorization request...</p>
+      <form id="email-form" class="panel" hidden>
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" autocomplete="email" required />
+        <button type="submit">Send magic link</button>
+      </form>
+      <section id="consent" class="panel" hidden>
+        <p id="client"></p>
+        <button id="approve" type="button">Approve</button>
+        <button id="deny" type="button" class="secondary">Deny</button>
+      </section>
+    </main>
+    <script src="/assets/vendor/supabase.js"></script>
+    <script src="/assets/oauth-consent.js"></script>
+  </body>
+</html>

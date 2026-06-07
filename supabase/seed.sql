@@ -1,0 +1,2 @@
+-- Safe local seed data belongs here. Phase 1 keeps this empty because users are
+-- created from verified Supabase Auth token claims.
