@@ -1,0 +1,39 @@
+services:
+  - type: web
+    runtime: node
+    name: personal-mcp
+    region: singapore
+    plan: starter
+    branch: main
+    buildCommand: corepack enable && corepack prepare pnpm@11.5.2 --activate && pnpm install --frozen-lockfile && pnpm build
+    startCommand: node dist/server.js
+    healthCheckPath: /healthz
+    maxShutdownDelaySeconds: 30
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: LOG_LEVEL
+        value: info
+      - key: MCP_SERVER_NAME
+        value: personal-mcp
+      - key: MCP_SERVER_VERSION
+        value: 0.1.0
+      - key: PUBLIC_BASE_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_AUTH_ISSUER
+        sync: false
+      - key: SUPABASE_JWKS_URL
+        sync: false
+      - key: SUPABASE_JWT_AUDIENCE
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false

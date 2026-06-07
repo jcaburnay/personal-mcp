@@ -13,6 +13,9 @@ backed by Supabase Postgres and Supabase Auth.
 - Supabase OAuth setup: https://supabase.com/docs/guides/auth/oauth-server/getting-started
 - Supabase JWT verification: https://supabase.com/docs/guides/auth/jwts
 - Supabase local migrations: https://supabase.com/docs/guides/local-development/overview
+- Render Web Services: https://render.com/docs/web-services
+- Render Blueprint spec: https://render.com/docs/blueprint-spec
+- Render Node version: https://render.com/docs/node-version
 
 ## Target Shape
 
@@ -112,7 +115,84 @@ production database for local tests.
 
 ## Application Deployment
 
-The host must run:
+This project targets Render for the first public HTTPS deployment.
+
+Committed Render files:
+
+- `render.yaml`: Render Blueprint for the web service.
+- `.node-version`: Node version pin used by Render's native Node runtime.
+
+The Render service uses:
+
+- Runtime: Node
+- Region: Singapore
+- Plan: Starter
+- Build command:
+
+```bash
+corepack enable && corepack prepare pnpm@11.5.2 --activate && pnpm install --frozen-lockfile && pnpm build
+```
+
+- Start command:
+
+```bash
+node dist/server.js
+```
+
+- Health check path: `/healthz`
+
+Render web services must bind to `0.0.0.0` and should use the `PORT`
+environment variable. This project does both through `src/server.ts` and the
+`PORT=10000` Blueprint value.
+
+### Render Environment Variables
+
+`render.yaml` sets safe defaults for:
+
+- `NODE_ENV=production`
+- `PORT=10000`
+- `LOG_LEVEL=info`
+- `MCP_SERVER_NAME=personal-mcp`
+- `MCP_SERVER_VERSION=0.1.0`
+
+Render will prompt for these deployment-specific values because they are marked
+with `sync: false`:
+
+- `PUBLIC_BASE_URL`
+- `DATABASE_URL`
+- `SUPABASE_URL`
+- `SUPABASE_AUTH_ISSUER`
+- `SUPABASE_JWKS_URL`
+- `SUPABASE_JWT_AUDIENCE`
+- `SUPABASE_ANON_KEY`
+- `ALLOWED_ORIGINS`
+
+Use the Render `onrender.com` URL first:
+
+```text
+PUBLIC_BASE_URL=https://<render-service>.onrender.com
+ALLOWED_ORIGINS=https://<render-service>.onrender.com,https://chatgpt.com,https://chat.openai.com
+```
+
+If a custom domain is added later, change `PUBLIC_BASE_URL` to the custom HTTPS
+origin and include both the custom origin and ChatGPT origins in
+`ALLOWED_ORIGINS`.
+
+### Render Setup
+
+1. Push this repository to GitHub.
+2. Create the Supabase production project and collect the environment values.
+3. In Render, create a new Blueprint from this repository.
+4. Confirm the `personal-mcp` web service settings from `render.yaml`.
+5. Enter every `sync: false` environment variable.
+6. Create the Blueprint and wait for the first deploy.
+7. Verify `/healthz`, `/readyz`, OAuth metadata, and `/mcp`.
+
+If the first deploy starts before the exact Render URL is known, let it fail,
+copy the generated `onrender.com` URL into `PUBLIC_BASE_URL` and
+`ALLOWED_ORIGINS`, then redeploy.
+
+The generic host command shape remains:
 
 ```bash
 pnpm install --frozen-lockfile
@@ -120,8 +200,7 @@ pnpm build
 pnpm start
 ```
 
-The server listens on `PORT` and binds to `0.0.0.0`. The hosting platform should
-terminate TLS and forward HTTP traffic to that process.
+Render terminates TLS and forwards HTTP traffic to the Node process.
 
 After deployment, verify:
 
