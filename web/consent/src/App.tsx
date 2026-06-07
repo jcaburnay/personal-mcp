@@ -228,7 +228,14 @@ export function App({ supabase }: AppProps) {
                   >
                     {isSubmitting ? "Sending..." : "Resend sign-in link"}
                   </button>
-                  <button type="button" className="secondary" onClick={() => setLinkSentTo(null)}>
+                  <button
+                    type="button"
+                    className="secondary"
+                    onClick={() => {
+                      setLinkSentTo(null);
+                      setMessage("Sign in to verify that you own this Personal MCP server.");
+                    }}
+                  >
                     Use a different email
                   </button>
                 </div>
