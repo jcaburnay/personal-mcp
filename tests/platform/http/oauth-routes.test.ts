@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 import { buildApp } from "../../../src/platform/app.js";
 import type { AppEnv } from "../../../src/platform/config/env.js";
 
-const testEnv: AppEnv = {
+const env: AppEnv = {
   nodeEnv: "test",
   port: 3000,
   logLevel: "info",
-  publicBaseUrl: "http://localhost:3000",
+  publicBaseUrl: "http://localhost",
   databaseUrl: "postgresql://postgres:postgres@127.0.0.1:55322/postgres",
   supabaseUrl: "http://127.0.0.1:55321",
   supabaseAuthIssuer: "http://127.0.0.1:55321/auth/v1",
@@ -15,43 +15,93 @@ const testEnv: AppEnv = {
   supabaseAnonKey: "local-anon-key",
   mcpServerName: "personal-mcp",
   mcpServerVersion: "0.1.0",
-  allowedOrigins: ["http://localhost:3000"],
+  allowedOrigins: ["http://localhost"],
 };
 
 describe("OAuth routes", () => {
   it("serves protected resource metadata", async () => {
-    const app = await buildApp(testEnv);
+    const app = await buildApp(env);
+
     const response = await app.inject({
       method: "GET",
       url: "/.well-known/oauth-protected-resource",
     });
 
     expect(response.statusCode).toBe(200);
-    expect(response.json()).toMatchObject({
-      resource: "http://localhost:3000",
+    expect(response.json()).toEqual({
+      resource: "http://localhost",
+      resource_name: "Personal MCP",
       authorization_servers: ["http://127.0.0.1:55321/auth/v1"],
+      bearer_methods_supported: ["header"],
+      scopes_supported: [
+        "notes.read",
+        "notes.write",
+        "finance.read",
+        "finance.write",
+        "finance.import",
+        "habits.read",
+        "habits.write",
+        "admin.backup",
+      ],
     });
+
+    await app.close();
   });
 
-  it("serves the OAuth consent page with Supabase config", async () => {
-    const app = await buildApp(testEnv);
-    const response = await app.inject({ method: "GET", url: "/oauth/consent" });
+  it("serves the React OAuth consent page with Supabase config script", async () => {
+    const app = await buildApp(env);
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/oauth/consent",
+    });
 
     expect(response.statusCode).toBe(200);
     expect(response.body).toContain("Authorize Personal MCP");
-    expect(response.body).toContain('data-supabase-url="http://127.0.0.1:55321"');
-    expect(response.body).toContain('data-supabase-anon-key="local-anon-key"');
+    expect(response.body).toContain("/assets/consent/config.js");
+    expect(response.body).toContain("/assets/consent/");
+
+    await app.close();
   });
 
-  it("serves OAuth consent assets", async () => {
-    const app = await buildApp(testEnv);
+  it("serves React consent assets", async () => {
+    const app = await buildApp(env);
 
-    const css = await app.inject({ method: "GET", url: "/assets/oauth-consent.css" });
-    const js = await app.inject({ method: "GET", url: "/assets/oauth-consent.js" });
+    const page = await app.inject({
+      method: "GET",
+      url: "/oauth/consent",
+    });
 
-    expect(css.statusCode).toBe(200);
-    expect(css.body).toContain(".shell");
+    const jsPath = page.body.match(/src="(\/assets\/consent\/assets\/[^"]+\.js)"/)?.[1];
+    const cssPath = page.body.match(/href="(\/assets\/consent\/assets\/[^"]+\.css)"/)?.[1];
+
+    expect(jsPath).toBeTruthy();
+    expect(cssPath).toBeTruthy();
+
+    const config = await app.inject({
+      method: "GET",
+      url: "/assets/consent/config.js",
+    });
+
+    const js = await app.inject({
+      method: "GET",
+      url: jsPath as string,
+    });
+
+    const css = await app.inject({
+      method: "GET",
+      url: cssPath as string,
+    });
+
+    expect(config.statusCode).toBe(200);
+    expect(config.body).toContain("window.__PERSONAL_MCP_CONFIG__");
+    expect(config.body).toContain('"supabaseUrl":"http://127.0.0.1:55321"');
+    expect(config.body).toContain('"supabaseAnonKey":"local-anon-key"');
+
     expect(js.statusCode).toBe(200);
-    expect(js.body).toContain("getAuthorizationDetails");
+    expect(css.statusCode).toBe(200);
+    expect(css.body).toContain(".page");
+
+    await app.close();
   });
 });

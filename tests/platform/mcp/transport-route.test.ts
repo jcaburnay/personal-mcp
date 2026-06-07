@@ -34,25 +34,25 @@ describe("MCP route", () => {
     expect(response.statusCode).toBe(204);
   });
 
-  it.each(["GET", "DELETE"] as const)(
-    "returns method not allowed for %s requests",
-    async (method) => {
-      const app = await buildApp(testEnv);
+  it.each([
+    "GET",
+    "DELETE",
+  ] as const)("returns method not allowed for %s requests", async (method) => {
+    const app = await buildApp(testEnv);
 
-      const response = await app.inject({
-        method,
-        url: "/mcp",
-      });
+    const response = await app.inject({
+      method,
+      url: "/mcp",
+    });
 
-      expect(response.statusCode).toBe(405);
-      expect(response.json()).toEqual({
-        jsonrpc: "2.0",
-        error: {
-          code: -32000,
-          message: "Method not allowed.",
-        },
-        id: null,
-      });
-    }
-  );
+    expect(response.statusCode).toBe(405);
+    expect(response.json()).toEqual({
+      jsonrpc: "2.0",
+      error: {
+        code: -32000,
+        message: "Method not allowed.",
+      },
+      id: null,
+    });
+  });
 });
