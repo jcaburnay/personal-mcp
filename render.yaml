@@ -32,7 +32,7 @@ services:
         sync: false
       - key: SUPABASE_JWT_AUDIENCE
         sync: false
-      - key: SUPABASE_PUBLISHABLE_KEY
+      - key: SUPABASE_ANON_KEY
         sync: false
       - key: ALLOWED_ORIGINS
         sync: false
