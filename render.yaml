@@ -3,13 +3,13 @@ services:
     runtime: node
     name: personal-mcp
     region: singapore
-    plan: starter
+    plan: free
     branch: main
     buildCommand: corepack enable && corepack prepare pnpm@11.5.2 --activate && pnpm install --frozen-lockfile && pnpm build
     startCommand: node dist/server.js
     healthCheckPath: /healthz
     maxShutdownDelaySeconds: 30
-    autoDeployTrigger: commit
+    autoDeploy: true
     envVars:
       - key: NODE_ENV
         value: production
