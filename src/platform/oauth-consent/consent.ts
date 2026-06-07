@@ -189,14 +189,28 @@ export const consentScript = `(function () {
       const formData = new FormData(formEl);
       const email = String(formData.get("email") || "");
 
-      const response = await oauthClient.client.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: window.location.href,
-        },
-      });
+      try {
+        const response = await oauthClient.client.auth.signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo: window.location.href,
+          },
+        });
 
-      setStatus(response.error ? "Could not send magic link." : "Check your email for the sign-in link.");
+        if (response.error) {
+          console.error("Magic link error", response.error);
+          setStatus("Could not send magic link: " + response.error.message);
+          return;
+        }
+
+        setStatus("Check your email for the sign-in link.");
+      } catch (error) {
+        console.error("Magic link exception", error);
+        setStatus(
+          "Could not send magic link: " +
+            (error instanceof Error ? error.message : String(error))
+        );
+      }
     });
   }
 
