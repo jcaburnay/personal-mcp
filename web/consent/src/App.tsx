@@ -22,6 +22,7 @@ export function App({ supabase }: AppProps) {
   const [email, setEmail] = useState("");
   const [clientName, setClientName] = useState("ChatGPT");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [linkSentTo, setLinkSentTo] = useState<string | null>(null);
 
   const authorizationId = useMemo(() => {
     const params = new URLSearchParams(window.location.search);
@@ -104,11 +105,42 @@ export function App({ supabase }: AppProps) {
         return;
       }
 
-      setMessage("Check your email for the sign-in link, then return here to approve access.");
+      setLinkSentTo(email);
+      setMessage("Check your email to continue.");
     } catch (error) {
       console.error("Magic link exception", error);
       setMessage(
         `Could not send sign-in link: ${error instanceof Error ? error.message : String(error)}`
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function resendMagicLink() {
+    if (!linkSentTo) return;
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await supabase.auth.signInWithOtp({
+        email: linkSentTo,
+        options: {
+          emailRedirectTo: window.location.href,
+        },
+      });
+
+      if (response.error) {
+        console.error("Magic link resend error", response.error);
+        setMessage(`Could not resend sign-in link: ${response.error.message}`);
+        return;
+      }
+
+      setMessage("We sent a new sign-in link. Check your email to continue.");
+    } catch (error) {
+      console.error("Magic link resend exception", error);
+      setMessage(
+        `Could not resend sign-in link: ${error instanceof Error ? error.message : String(error)}`
       );
     } finally {
       setIsSubmitting(false);
@@ -175,27 +207,63 @@ export function App({ supabase }: AppProps) {
         </div>
 
         {viewState === "signed_out" && (
-          <form className="panel" onSubmit={sendMagicLink}>
-            <div>
-              <label htmlFor="email">Email address</label>
-              <p className="field-hint">Use the email connected to your Supabase account.</p>
-            </div>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              required
-            />
-            <button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Sending..." : "Send sign-in link"}
-            </button>
-            <p className="fine-print">
-              Only approve this connection if you started it from ChatGPT.
-            </p>
-          </form>
+          <div className="panel">
+            {linkSentTo ? (
+              <>
+                <div className="request-box">
+                  <p className="request-label">Sign-in link sent</p>
+                  <p className="request-name">Check your email</p>
+                </div>
+
+                <p className="field-hint">
+                  We sent a sign-in link to <strong>{linkSentTo}</strong>. Open that email in this
+                  browser to continue approving the ChatGPT connection.
+                </p>
+
+                <div className="actions">
+                  <button
+                    type="button"
+                    onClick={() => void resendMagicLink()}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Sending..." : "Resend sign-in link"}
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary"
+                    onClick={() => {
+                      setLinkSentTo(null);
+                      setMessage("Sign in to verify that you own this Personal MCP server.");
+                    }}
+                  >
+                    Use a different email
+                  </button>
+                </div>
+              </>
+            ) : (
+              <form className="email-form" onSubmit={sendMagicLink}>
+                <div>
+                  <label htmlFor="email">Email address</label>
+                  <p className="field-hint">Use the email connected to your Supabase account.</p>
+                </div>
+                <input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  required
+                />
+                <button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Sending..." : "Send sign-in link"}
+                </button>
+                <p className="fine-print">
+                  Only approve this connection if you started it from ChatGPT.
+                </p>
+              </form>
+            )}
+          </div>
         )}
 
         {viewState === "ready" && (

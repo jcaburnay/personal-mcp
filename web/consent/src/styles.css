@@ -107,6 +107,11 @@ h1 {
   line-height: 1.55;
 }
 
+.email-form {
+  display: grid;
+  gap: 14px;
+}
+
 .panel {
   display: grid;
   gap: 14px;
