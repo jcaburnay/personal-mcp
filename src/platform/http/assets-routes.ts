@@ -13,12 +13,16 @@ function createConsentConfigScript(env: AppEnv) {
     supabaseAnonKey: env.supabaseAnonKey,
   });
 
-  return `<script>window.__PERSONAL_MCP_CONFIG__ = ${config};</script>`;
+  return `window.__PERSONAL_MCP_CONFIG__ = ${config};`;
 }
 
 export async function registerAssetsRoutes(app: FastifyInstance, env: AppEnv) {
   app.get("/assets/health.txt", async (_request, reply) => {
     return reply.type("text/plain").send("ok");
+  });
+
+  app.get("/assets/consent/config.js", async (_request, reply) => {
+    return reply.type("application/javascript; charset=utf-8").send(createConsentConfigScript(env));
   });
 
   await app.register(fastifyStatic, {
@@ -29,7 +33,10 @@ export async function registerAssetsRoutes(app: FastifyInstance, env: AppEnv) {
 
   app.get("/oauth/consent", async (_request, reply) => {
     const html = await readFile(consentIndexPath, "utf8");
-    const hydratedHtml = html.replace("</head>", `${createConsentConfigScript(env)}</head>`);
+    const hydratedHtml = html.replace(
+      "</head>",
+      '<script src="/assets/consent/config.js"></script></head>'
+    );
 
     return reply.type("text/html; charset=utf-8").send(hydratedHtml);
   });

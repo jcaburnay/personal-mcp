@@ -48,7 +48,7 @@ describe("OAuth routes", () => {
     await app.close();
   });
 
-  it("serves the React OAuth consent page with Supabase config", async () => {
+  it("serves the React OAuth consent page with Supabase config script", async () => {
     const app = await buildApp(env);
 
     const response = await app.inject({
@@ -58,9 +58,7 @@ describe("OAuth routes", () => {
 
     expect(response.statusCode).toBe(200);
     expect(response.body).toContain("Authorize Personal MCP");
-    expect(response.body).toContain("window.__PERSONAL_MCP_CONFIG__");
-    expect(response.body).toContain('"supabaseUrl":"http://127.0.0.1:55321"');
-    expect(response.body).toContain('"supabaseAnonKey":"local-anon-key"');
+    expect(response.body).toContain("/assets/consent/config.js");
     expect(response.body).toContain("/assets/consent/");
 
     await app.close();
@@ -74,11 +72,16 @@ describe("OAuth routes", () => {
       url: "/oauth/consent",
     });
 
-    const jsPath = page.body.match(/src="([^"]+\.js)"/)?.[1];
-    const cssPath = page.body.match(/href="([^"]+\.css)"/)?.[1];
+    const jsPath = page.body.match(/src="(\/assets\/consent\/assets\/[^"]+\.js)"/)?.[1];
+    const cssPath = page.body.match(/href="(\/assets\/consent\/assets\/[^"]+\.css)"/)?.[1];
 
     expect(jsPath).toBeTruthy();
     expect(cssPath).toBeTruthy();
+
+    const config = await app.inject({
+      method: "GET",
+      url: "/assets/consent/config.js",
+    });
 
     const js = await app.inject({
       method: "GET",
@@ -89,6 +92,11 @@ describe("OAuth routes", () => {
       method: "GET",
       url: cssPath as string,
     });
+
+    expect(config.statusCode).toBe(200);
+    expect(config.body).toContain("window.__PERSONAL_MCP_CONFIG__");
+    expect(config.body).toContain('"supabaseUrl":"http://127.0.0.1:55321"');
+    expect(config.body).toContain('"supabaseAnonKey":"local-anon-key"');
 
     expect(js.statusCode).toBe(200);
     expect(css.statusCode).toBe(200);

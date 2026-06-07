@@ -10,7 +10,7 @@ export async function registerSecurity(app: FastifyInstance, env: AppEnv) {
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
         connectSrc: ["'self'", env.supabaseUrl],
         imgSrc: ["'self'", "data:"],
