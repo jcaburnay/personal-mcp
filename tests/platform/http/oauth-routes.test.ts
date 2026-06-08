@@ -12,7 +12,7 @@ const env: AppEnv = {
   supabaseAuthIssuer: "http://127.0.0.1:55321/auth/v1",
   supabaseJwksUrl: "http://127.0.0.1:55321/auth/v1/.well-known/jwks.json",
   supabaseJwtAudience: "authenticated",
-  supabaseAnonKey: "local-anon-key",
+  supabasePublishableKey: "local-publishable-key",
   mcpServerName: "personal-mcp",
   mcpServerVersion: "0.1.0",
   allowedOrigins: ["http://localhost"],
@@ -87,7 +87,7 @@ describe("OAuth routes", () => {
     expect(config.statusCode).toBe(200);
     expect(config.body).toContain("window.__PERSONAL_MCP_CONFIG__");
     expect(config.body).toContain('"supabaseUrl":"http://127.0.0.1:55321"');
-    expect(config.body).toContain('"supabaseAnonKey":"local-anon-key"');
+    expect(config.body).toContain('"supabasePublishableKey":"local-publishable-key"');
 
     expect(js.statusCode).toBe(200);
     expect(css.statusCode).toBe(200);

@@ -11,13 +11,13 @@ if (!root) {
 }
 
 const supabaseUrl = window.__PERSONAL_MCP_CONFIG__?.supabaseUrl;
-const supabaseAnonKey = window.__PERSONAL_MCP_CONFIG__?.supabaseAnonKey;
+const supabasePublishableKey = window.__PERSONAL_MCP_CONFIG__?.supabasePublishableKey;
 
-if (!supabaseUrl || !supabaseAnonKey) {
+if (!supabaseUrl || !supabasePublishableKey) {
   throw new Error("Missing Supabase consent configuration.");
 }
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabase = createClient(supabaseUrl, supabasePublishableKey);
 
 createRoot(root).render(
   <React.StrictMode>
