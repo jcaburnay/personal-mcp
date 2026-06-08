@@ -10,7 +10,7 @@ const consentIndexPath = resolve(consentDistPath, "index.html");
 function createConsentConfigScript(env: AppEnv) {
   const config = JSON.stringify({
     supabaseUrl: env.supabaseUrl,
-    supabaseAnonKey: env.supabaseAnonKey,
+    supabasePublishableKey: env.supabasePublishableKey,
   });
 
   return `window.__PERSONAL_MCP_CONFIG__ = ${config};`;

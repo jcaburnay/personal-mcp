@@ -33,7 +33,7 @@ const testEnv: AppEnv = {
   supabaseAuthIssuer: "http://127.0.0.1:55321/auth/v1",
   supabaseJwksUrl: "http://127.0.0.1:55321/auth/v1/.well-known/jwks.json",
   supabaseJwtAudience: "authenticated",
-  supabaseAnonKey: "local-anon-key",
+  supabasePublishableKey: "local-publishable-key",
   mcpServerName: "personal-mcp",
   mcpServerVersion: "0.1.0",
   allowedOrigins: ["http://localhost:3000"],

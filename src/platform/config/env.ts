@@ -10,7 +10,7 @@ const rawEnvSchema = z.object({
   SUPABASE_AUTH_ISSUER: z.string().url(),
   SUPABASE_JWKS_URL: z.string().url(),
   SUPABASE_JWT_AUDIENCE: z.string().min(1),
-  SUPABASE_ANON_KEY: z.string().min(1),
+  SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
   MCP_SERVER_NAME: z.string().min(1).default("personal-mcp"),
   MCP_SERVER_VERSION: z.string().min(1).default("0.1.0"),
   ALLOWED_ORIGINS: z.string().min(1),
@@ -26,7 +26,7 @@ export type AppEnv = {
   supabaseAuthIssuer: string;
   supabaseJwksUrl: string;
   supabaseJwtAudience: string;
-  supabaseAnonKey: string;
+  supabasePublishableKey: string;
   mcpServerName: string;
   mcpServerVersion: string;
   allowedOrigins: string[];
@@ -49,7 +49,7 @@ export function parseEnv(input: NodeJS.ProcessEnv): AppEnv {
     supabaseAuthIssuer: parsed.data.SUPABASE_AUTH_ISSUER,
     supabaseJwksUrl: parsed.data.SUPABASE_JWKS_URL,
     supabaseJwtAudience: parsed.data.SUPABASE_JWT_AUDIENCE,
-    supabaseAnonKey: parsed.data.SUPABASE_ANON_KEY,
+    supabasePublishableKey: parsed.data.SUPABASE_PUBLISHABLE_KEY,
     mcpServerName: parsed.data.MCP_SERVER_NAME,
     mcpServerVersion: parsed.data.MCP_SERVER_VERSION,
     allowedOrigins: parsed.data.ALLOWED_ORIGINS.split(",")
