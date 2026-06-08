@@ -1,6 +1,21 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { buildApp } from "../../../src/platform/app.js";
+import type { VerifiedToken } from "../../../src/platform/auth/token-verifier.js";
 import type { AppEnv } from "../../../src/platform/config/env.js";
+import type { Database } from "../../../src/platform/db/client.js";
+
+// Minimal drizzle stub mirroring resolveCurrentUser's insert -> onConflictDoUpdate -> returning chain.
+function stubDbReturning(row: Record<string, unknown>): Database {
+  return {
+    insert: () => ({
+      values: () => ({
+        onConflictDoUpdate: () => ({
+          returning: async () => [row],
+        }),
+      }),
+    }),
+  } as unknown as Database;
+}
 
 const testEnv: AppEnv = {
   nodeEnv: "test",
@@ -54,5 +69,75 @@ describe("MCP route", () => {
       },
       id: null,
     });
+  });
+
+  it("rejects POST requests without a bearer token", async () => {
+    const app = await buildApp(testEnv, {
+      db: {} as never,
+      verifyToken: async () => {
+        throw new Error("verifyToken should not run when no token is present");
+      },
+    });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/mcp",
+      payload: { jsonrpc: "2.0", method: "initialize", id: 1 },
+    });
+
+    expect(response.statusCode).toBe(401);
+    expect(response.headers["www-authenticate"]).toContain(
+      'resource_metadata="http://localhost:3000/.well-known/oauth-protected-resource"'
+    );
+    expect(response.json()).toMatchObject({
+      jsonrpc: "2.0",
+      error: { code: -32001 },
+      id: null,
+    });
+  });
+
+  it("accepts a POST with a valid bearer token and runs under the resolved user", async () => {
+    const verifyToken = vi.fn(
+      async (): Promise<VerifiedToken> => ({
+        sub: "sub-1",
+        email: "user@example.com",
+        name: "User One",
+        scope: "notes.read",
+      })
+    );
+    const db = stubDbReturning({
+      id: "user-1",
+      externalSubject: "sub-1",
+      email: "user@example.com",
+      displayName: "User One",
+    });
+
+    const app = await buildApp(testEnv, { db, verifyToken });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/mcp",
+      headers: {
+        authorization: "Bearer good-token",
+        "content-type": "application/json",
+        accept: "application/json, text/event-stream",
+      },
+      payload: {
+        jsonrpc: "2.0",
+        id: 1,
+        method: "initialize",
+        params: {
+          protocolVersion: "2025-06-18",
+          capabilities: {},
+          clientInfo: { name: "test-client", version: "1.0.0" },
+        },
+      },
+    });
+
+    // The bearer token was verified and the request was NOT rejected by the auth gate.
+    expect(verifyToken).toHaveBeenCalledWith("good-token");
+    expect(response.statusCode).not.toBe(401);
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toContain("personal-mcp");
   });
 });

@@ -1,0 +1,93 @@
+[
+  {
+    "label": "pnpm dev",
+    "command": "pnpm",
+    "args": ["dev"],
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "pnpm dev:web",
+    "command": "pnpm",
+    "args": ["dev:web"],
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "pnpm build",
+    "command": "pnpm",
+    "args": ["build"],
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "pnpm typecheck",
+    "command": "pnpm",
+    "args": ["typecheck"],
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "pnpm lint",
+    "command": "pnpm",
+    "args": ["lint"],
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "pnpm format",
+    "command": "pnpm",
+    "args": ["format"],
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "pnpm format:check",
+    "command": "pnpm",
+    "args": ["format:check"],
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "pnpm test",
+    "command": "pnpm",
+    "args": ["test"],
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "pnpm test:watch",
+    "command": "pnpm",
+    "args": ["test:watch"],
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "pnpm check",
+    "command": "sh",
+    "args": ["-c", "pnpm format:check && pnpm lint && pnpm build && pnpm typecheck && pnpm test"],
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "supabase start",
+    "command": "pnpm",
+    "args": ["supabase:start"],
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "supabase stop",
+    "command": "pnpm",
+    "args": ["supabase:stop"],
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "supabase reset",
+    "command": "pnpm",
+    "args": ["supabase:reset"],
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false
+  }
+]

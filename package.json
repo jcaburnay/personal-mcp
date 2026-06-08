@@ -21,7 +21,7 @@
     "format:check": "biome format .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:db": "vitest run tests/platform --config vitest.config.ts",
+    "test:db": "RUN_DB_TESTS=1 vitest run tests/platform --config vitest.config.ts",
     "migrations:check": "supabase db reset --local",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
