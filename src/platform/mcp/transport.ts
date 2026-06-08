@@ -2,8 +2,8 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { AuthError } from "../auth/auth-errors.js";
 import { resolveCurrentUser } from "../auth/current-user.js";
-import { parseScopeClaim } from "../auth/scopes.js";
 import { extractBearerToken, type VerifiedToken } from "../auth/token-verifier.js";
+import { findUserScopes } from "../auth/user-scopes.js";
 import type { AppEnv } from "../config/env.js";
 import type { Database } from "../db/client.js";
 import { createPersonalMcpServer } from "./server.js";
@@ -43,11 +43,13 @@ export async function authenticateRequest(
 
   const verified = await deps.verifyToken(token);
   const currentUser = await resolveCurrentUser(deps.db, verified);
+  // Authorization comes from our own records, not the IdP token (Supabase issues no scope claim).
+  const grantedScopes = await findUserScopes(deps.db, currentUser.id);
 
   return {
     requestId: request.id,
     currentUser,
-    grantedScopes: parseScopeClaim(verified.scope),
+    grantedScopes,
   };
 }
 

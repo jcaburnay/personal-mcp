@@ -33,16 +33,7 @@ describe("OAuth routes", () => {
       resource_name: "Personal MCP",
       authorization_servers: ["http://127.0.0.1:55321/auth/v1"],
       bearer_methods_supported: ["header"],
-      scopes_supported: [
-        "notes.read",
-        "notes.write",
-        "finance.read",
-        "finance.write",
-        "finance.import",
-        "habits.read",
-        "habits.write",
-        "admin.backup",
-      ],
+      scopes_supported: ["openid", "email", "profile"],
     });
 
     await app.close();

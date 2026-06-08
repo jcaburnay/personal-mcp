@@ -25,12 +25,3 @@ export function assertScopes(grantedScopes: readonly string[], requiredScopes: r
     throw new AuthError("Required scope is missing", "insufficient_scope");
   }
 }
-
-export function parseScopeClaim(scopeClaim: string | undefined): string[] {
-  return (
-    scopeClaim
-      ?.split(" ")
-      .map((scope) => scope.trim())
-      .filter(Boolean) ?? []
-  );
-}
