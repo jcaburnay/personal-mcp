@@ -37,11 +37,12 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      - name: Unit tests
-        run: pnpm test
-
+      # Build before tests: some route tests serve built widget assets from dist-web.
       - name: Build
         run: pnpm build
+
+      - name: Unit tests
+        run: pnpm test
 
   database:
     name: Migrations and DB tests
@@ -69,6 +70,11 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      # test:db runs the whole tests/platform suite, including route tests that serve
+      # built widget assets from dist-web — build them before the tests run.
+      - name: Build web assets
+        run: pnpm build:web
 
       - uses: supabase/setup-cli@v1
         with:
