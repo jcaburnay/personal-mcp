@@ -4,6 +4,12 @@ A production personal **MCP / App platform** where **ChatGPT is the primary inte
 remote MCP server (a modular monolith) owns the data and exposes tools plus embedded React widgets
 through OpenAI's MCP Apps pattern — for notes, finance, habits, and future personal mini-apps.
 
+It's a standard remote MCP server, so it also works from **any MCP client** (Claude, Cursor, VS
+Code, the MCP Inspector, your own SDK client) — only the embedded widget UI is ChatGPT-specific.
+
+> **Open-source template (MIT).** This repo is meant to be forked and self-hosted: bring your own
+> Supabase project + host and run your own instance. See **[`docs/SELF_HOSTING.md`](docs/SELF_HOSTING.md)**.
+
 > **Status:** the platform **foundation** is built and running in production (auth, MCP transport,
 > persistence, audit/idempotency, health checks). The only tools today are `platform.status` and
 > `platform.whoami`; the notes/finance/habits app modules are not built yet. The full roadmap is in
@@ -144,7 +150,20 @@ docs/                    production plan + architecture notes
 
 ## Deployment
 
-Render auto-deploys `main` ([`render.yaml`](render.yaml), start `node dist/server.js`, healthcheck
-`/healthz`) — it does **not** gate on CI, so let the GitHub Actions checks pass before merging.
-Supabase provides managed Postgres + Auth. All secrets are Render env vars (`sync: false`); never
-commit them.
+The reference deployment runs on **Render** (auto-deploys `main` via [`render.yaml`](render.yaml),
+start `node dist/server.js`, healthcheck `/healthz`) — it does **not** gate on CI, so let the GitHub
+Actions checks pass before merging. Supabase provides managed Postgres + Auth. All secrets are env
+vars (`sync: false`); never commit them.
+
+**Docker** (deploy anywhere — Fly, a VPS, any container host):
+
+```bash
+docker build -t personal-mcp .
+docker run --rm -p 3000:3000 --env-file .env.production personal-mcp
+```
+
+The image is multi-stage (builds web + server, ships prod deps only) and exposes a `/healthz`
+healthcheck. Put TLS in front (the endpoint must be HTTPS for MCP clients).
+
+**Self-hosting your own instance** (your Supabase project + host): full step-by-step in
+**[`docs/SELF_HOSTING.md`](docs/SELF_HOSTING.md)**.
