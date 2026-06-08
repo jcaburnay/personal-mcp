@@ -55,4 +55,29 @@ describe("MCP route", () => {
       id: null,
     });
   });
+
+  it("rejects POST requests without a bearer token", async () => {
+    const app = await buildApp(testEnv, {
+      db: {} as never,
+      verifyToken: async () => {
+        throw new Error("verifyToken should not run when no token is present");
+      },
+    });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/mcp",
+      payload: { jsonrpc: "2.0", method: "initialize", id: 1 },
+    });
+
+    expect(response.statusCode).toBe(401);
+    expect(response.headers["www-authenticate"]).toContain(
+      'resource_metadata="http://localhost:3000/.well-known/oauth-protected-resource"'
+    );
+    expect(response.json()).toMatchObject({
+      jsonrpc: "2.0",
+      error: { code: -32001 },
+      id: null,
+    });
+  });
 });
