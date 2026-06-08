@@ -21,7 +21,7 @@ export async function buildApp(env: AppEnv, deps?: BuildAppDeps) {
   const verifyToken = deps?.verifyToken ?? createTokenVerifier(env);
 
   await registerSecurity(app, env);
-  await registerHealthRoutes(app);
+  await registerHealthRoutes(app, db);
   await registerAssetsRoutes(app, env);
   await registerMcpTransport(app, env, { db, verifyToken });
 

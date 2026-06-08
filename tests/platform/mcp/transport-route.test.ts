@@ -4,14 +4,20 @@ import type { VerifiedToken } from "../../../src/platform/auth/token-verifier.js
 import type { AppEnv } from "../../../src/platform/config/env.js";
 import type { Database } from "../../../src/platform/db/client.js";
 
-// Minimal drizzle stub mirroring resolveCurrentUser's insert -> onConflictDoUpdate -> returning chain.
-function stubDbReturning(row: Record<string, unknown>): Database {
+// Minimal drizzle stub mirroring resolveCurrentUser's insert -> onConflictDoUpdate -> returning
+// chain and findUserScopes's select -> from -> where chain.
+function stubDbReturning(row: Record<string, unknown>, scopes: string[] = []): Database {
   return {
     insert: () => ({
       values: () => ({
         onConflictDoUpdate: () => ({
           returning: async () => [row],
         }),
+      }),
+    }),
+    select: () => ({
+      from: () => ({
+        where: async () => scopes.map((scope) => ({ scope })),
       }),
     }),
   } as unknown as Database;

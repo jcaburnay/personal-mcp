@@ -13,14 +13,20 @@ function fakeRequest(authorization?: string) {
   } as Parameters<typeof authenticateRequest>[1];
 }
 
-// Minimal drizzle stub mirroring resolveCurrentUser's insert -> onConflictDoUpdate -> returning chain.
-function stubDb(row: Record<string, unknown>): Database {
+// Minimal drizzle stub mirroring resolveCurrentUser's insert -> onConflictDoUpdate -> returning
+// chain and findUserScopes's select -> from -> where chain.
+function stubDb(row: Record<string, unknown>, scopes: string[] = []): Database {
   return {
     insert: () => ({
       values: () => ({
         onConflictDoUpdate: () => ({
           returning: async () => [row],
         }),
+      }),
+    }),
+    select: () => ({
+      from: () => ({
+        where: async () => scopes.map((scope) => ({ scope })),
       }),
     }),
   } as unknown as Database;
@@ -55,19 +61,22 @@ describe("authenticateRequest", () => {
     });
   });
 
-  it("resolves the user and parses granted scopes on success", async () => {
+  it("resolves the user and loads granted scopes from the database on success", async () => {
     const deps: Deps = {
-      db: stubDb({
-        id: "user-1",
-        externalSubject: "sub-1",
-        email: "user@example.com",
-        displayName: "User One",
-      }),
+      db: stubDb(
+        {
+          id: "user-1",
+          externalSubject: "sub-1",
+          email: "user@example.com",
+          displayName: "User One",
+        },
+        ["notes.read", "finance.read"]
+      ),
       verifyToken: async (): Promise<VerifiedToken> => ({
         sub: "sub-1",
         email: "user@example.com",
         name: "User One",
-        scope: "notes.read finance.read",
+        // Supabase issues no scope claim; authorization must come from app_user_scopes, not here.
       }),
     };
 
