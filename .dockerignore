@@ -1,0 +1,16 @@
+node_modules
+dist
+dist-web
+.git
+.gitignore
+.env*
+.pnpm-store
+.supabase-home
+.github
+.zed
+.vscode
+.idea
+.DS_Store
+tests
+docs
+*.log

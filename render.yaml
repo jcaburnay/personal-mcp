@@ -1,3 +1,5 @@
+# Render blueprint (reference deploy). Self-hosters: edit name/region/branch for your fork,
+# and set the `sync: false` secrets in the Render dashboard. See docs/SELF_HOSTING.md.
 services:
   - type: web
     runtime: node
