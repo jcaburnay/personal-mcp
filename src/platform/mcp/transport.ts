@@ -117,7 +117,7 @@ export async function registerMcpTransport(
       });
     }
 
-    const mcpServer = createPersonalMcpServer(env, context);
+    const mcpServer = createPersonalMcpServer(env, context, deps.db);
     const transport = new StreamableHTTPServerTransport();
     const cleanup = () => {
       void transport.close();

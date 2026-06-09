@@ -8,6 +8,8 @@ export type CurrentUser = {
   externalSubject: string;
   email: string | null;
   displayName: string | null;
+  /** IANA timezone for date-sensitive apps (e.g. habit streaks); null until the user sets one. */
+  timezone: string | null;
 };
 
 export async function resolveCurrentUser(db: Database, token: VerifiedToken): Promise<CurrentUser> {
@@ -50,5 +52,6 @@ export async function resolveCurrentUser(db: Database, token: VerifiedToken): Pr
     externalSubject: user.externalSubject,
     email: user.email,
     displayName: user.displayName,
+    timezone: user.timezone,
   };
 }
