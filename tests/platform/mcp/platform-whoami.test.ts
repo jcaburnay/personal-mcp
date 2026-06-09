@@ -21,6 +21,7 @@ const currentUser: CurrentUser = {
   externalSubject: "sub-1",
   email: "user@example.com",
   displayName: "User One",
+  timezone: null,
 };
 
 function captureRegistration(context: ToolContext) {

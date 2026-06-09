@@ -7,6 +7,9 @@ export const appUsers = platformSchema.table("app_users", {
   externalSubject: text("external_subject").notNull().unique(),
   email: text("email"),
   displayName: text("display_name"),
+  // IANA timezone used to compute date boundaries for date-sensitive apps (e.g. habit streaks).
+  // Nullable; callers fall back to DEFAULT_TIMEZONE when unset.
+  timezone: text("timezone"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
